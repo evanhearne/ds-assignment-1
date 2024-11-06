@@ -1,13 +1,43 @@
 ## Serverless REST Assignment - Distributed Systems.
 
-__Name:__ ....your name .....
+__Name:__ Evan Hearne
 
-__Demo:__ ... link to your YouTube video demonstration ......
+__Demo:__ #TODO record demo and paste video link here // use a capture tool that allows direct embed into markdown . 
 
 ### Context.
 
-State the context you chose for your web API and detail the attributes stored in the main database table.
+The chosen context for my web API is an Ice Cream Parlour. The Ice Cream Parlour wants to expand their store front to the online realm for online orders.
 
+For this they require the main database being `Stock`, which contains the various ice creams that they stock. The schema for `Stock` database is as follows:
+
+#### `Stock` DB Schema:
+- Primary Key: `IceCreamID` (int)
+- Attributes:
+    - `Name` (str)
+    - `Allergens` (list_str)
+    - `Price` (double)
+    - `IsStock` (bool)
+
+The store also requires a way to store customer information. They can do this with the `Customer` database for which the schema is:
+
+#### `Customer` DB Schema:
+- Primary Key: `CustomerID` (int)
+- Attributes:
+    - `Name` (str)
+    - `Allergies` (list_str)
+    - `FavouriteIcecreams` (list_int)
+
+The store also requires a way to take orders. They can do this with the `Order` database for which the schema is:
+
+#### `Order` DB Schema:
+- Primary Key: `OrderID` (int)
+- Attributes:
+    - `CustomerID` (int)
+    - `Items` (list of objects containing `IceCreamID` (int), `Quantity` (int) and `CustomerNotes` (str))
+    - `OrderStatus` (str)
+    - `StoreNotes` (str)
+
+# TODO fill in the rest as you go...
 ### App API endpoints.
 
 [ Provide a bullet-point list of the app's endpoints (excluding the Auth API) you have successfully implemented. ]
