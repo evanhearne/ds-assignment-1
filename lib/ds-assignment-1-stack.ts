@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import { RemovalPolicy } from 'aws-cdk-lib';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class DsAssignment1Stack extends cdk.Stack {
@@ -13,6 +14,7 @@ export class DsAssignment1Stack extends cdk.Stack {
       partitionKey: { name: 'IceCreamID', type: dynamodb.AttributeType.NUMBER },
       tableName: 'Stock',
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY, // Ensures deletion when `cdk destroy` is run
     });
 
     // Create Lambda function
@@ -34,6 +36,7 @@ export class DsAssignment1Stack extends cdk.Stack {
       sortKey: { name: 'Name', type: dynamodb.AttributeType.STRING }, // Composite key
       tableName: 'Customer',
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY, // Ensures deletion when `cdk destroy` is run
     });
 
     // Lambda for Customer operations
