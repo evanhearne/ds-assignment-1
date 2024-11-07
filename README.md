@@ -50,3 +50,10 @@ e.g.
 
 [ State whether you have created a multi-stack solution for this assignment or used lambda layers to speed up update deployments. Also, mention any aspect of the CDK framework __that was not covered in the lectures that you used in this assignment. ]
 
+#### Deployment Instructions
+```bash
+npm install
+tsc # compile code to js for lambda
+cdk deploy
+```
+
