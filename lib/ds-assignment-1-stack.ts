@@ -19,7 +19,7 @@ export class DsAssignment1Stack extends cdk.Stack {
     const getStockFunction = new lambda.Function(this, 'GetStockFunction', {
       runtime: lambda.Runtime.NODEJS_18_X, // Adjust runtime as needed
       code: lambda.Code.fromAsset('lambda'), // Path to your Lambda function code
-      handler: 'get-stock.handler',
+      handler: 'stock-handler.getStock',
       environment: {
         STOCK_TABLE: stockTable.tableName,
       },

@@ -1,7 +1,10 @@
-import { DynamoDB } from 'aws-sdk';
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { DynamoDBClient, ReturnValue } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
-const dynamoDB = new DynamoDB.DocumentClient();
+// Create a DynamoDB client
+const dynamoDBClient = new DynamoDBClient({ region: process.env.AWS_REGION }); // Make sure region is correctly set
+const dynamoDB = DynamoDBDocumentClient.from(dynamoDBClient); // Use the Document client wrapper for ease of use
 const CUSTOMER_TABLE = process.env.CUSTOMER_TABLE!; // Ensure this is set in your Lambda environment
 
 // Handler to retrieve a customer by CustomerID and Name
@@ -12,7 +15,7 @@ export const getCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatew
     if (!CustomerID || !Name) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'CustomerID and Name are required' }),
+            body: JSON.stringify({ error: "CustomerID and Name are required" }),
         };
     }
 
@@ -25,7 +28,7 @@ export const getCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatew
     };
 
     try {
-        const data = await dynamoDB.get(params).promise();
+        const data = await dynamoDB.send(new GetCommand(params));
         return {
             statusCode: 200,
             body: JSON.stringify(data.Item),
@@ -33,7 +36,7 @@ export const getCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatew
     } catch (error: any) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Could not retrieve customer', message: error.message }),
+            body: JSON.stringify({ error: "Could not retrieve customer", message: error.message }),
         };
     }
 };
@@ -43,7 +46,7 @@ export const addCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatew
     if (!event.body) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Request body is required' }),
+            body: JSON.stringify({ error: "Request body is required" }),
         };
     }
 
@@ -52,7 +55,7 @@ export const addCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatew
     if (!CustomerID || !Name) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'CustomerID and Name are required' }),
+            body: JSON.stringify({ error: "CustomerID and Name are required" }),
         };
     }
 
@@ -67,15 +70,15 @@ export const addCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatew
     };
 
     try {
-        await dynamoDB.put(params).promise();
+        await dynamoDB.send(new PutCommand(params));
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Customer added successfully' }),
+            body: JSON.stringify({ message: "Customer added successfully" }),
         };
     } catch (error: any) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Could not add customer', message: error.message }),
+            body: JSON.stringify({ error: "Could not add customer", message: error.message }),
         };
     }
 };
@@ -88,14 +91,14 @@ export const updateCustomer = async (event: APIGatewayProxyEvent): Promise<APIGa
     if (!CustomerID || !Name) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'CustomerID and Name are required' }),
+            body: JSON.stringify({ error: "CustomerID and Name are required" }),
         };
     }
 
     if (!event.body) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'Request body is required' }),
+            body: JSON.stringify({ error: "Request body is required" }),
         };
     }
 
@@ -107,24 +110,24 @@ export const updateCustomer = async (event: APIGatewayProxyEvent): Promise<APIGa
             CustomerID: parseInt(CustomerID, 10),
             Name: Name,
         },
-        UpdateExpression: 'SET Allergies = :allergies, FavouriteIcecreams = :favourites',
+        UpdateExpression: "SET Allergies = :allergies, FavouriteIcecreams = :favourites",
         ExpressionAttributeValues: {
-            ':allergies': Allergies || [],
-            ':favourites': FavouriteIcecreams || [],
+            ":allergies": Allergies || [],
+            ":favourites": FavouriteIcecreams || [],
         },
-        ReturnValues: 'UPDATED_NEW',
+        ReturnValues: ReturnValue.UPDATED_NEW,
     };
 
     try {
-        const data = await dynamoDB.update(params).promise();
+        const data = await dynamoDB.send(new UpdateCommand(params));
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Customer updated successfully', data: data.Attributes }),
+            body: JSON.stringify({ message: "Customer updated successfully", data: data.Attributes }),
         };
     } catch (error: any) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Could not update customer', message: error.message }),
+            body: JSON.stringify({ error: "Could not update customer", message: error.message }),
         };
     }
 };
@@ -137,7 +140,7 @@ export const deleteCustomer = async (event: APIGatewayProxyEvent): Promise<APIGa
     if (!CustomerID || !Name) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: 'CustomerID and Name are required' }),
+            body: JSON.stringify({ error: "CustomerID and Name are required" }),
         };
     }
 
@@ -150,15 +153,15 @@ export const deleteCustomer = async (event: APIGatewayProxyEvent): Promise<APIGa
     };
 
     try {
-        await dynamoDB.delete(params).promise();
+        await dynamoDB.send(new DeleteCommand(params));
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Customer deleted successfully' }),
+            body: JSON.stringify({ message: "Customer deleted successfully" }),
         };
     } catch (error: any) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Could not delete customer', message: error.message }),
+            body: JSON.stringify({ error: "Could not delete customer", message: error.message }),
         };
     }
 };
