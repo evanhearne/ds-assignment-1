@@ -27,17 +27,8 @@ The store also requires a way to store customer information. They can do this wi
     - `Allergies` (list_str)
     - `FavouriteIcecreams` (list_int)
 
-The store also requires a way to take orders. They can do this with the `Order` database for which the schema is:
+The store may require more databases to store data, however, for this assignment, I will stick with these two for simplicity. 
 
-#### `Order` DB Schema:
-- Primary Key: `OrderID` (int)
-- Attributes:
-    - `CustomerID` (int)
-    - `Items` (list of objects containing `IceCreamID` (int), `Quantity` (int) and `CustomerNotes` (str))
-    - `OrderStatus` (str)
-    - `StoreNotes` (str)
-
-# TODO fill in the rest as you go...
 ### App API endpoints.
 
 [ Provide a bullet-point list of the app's endpoints (excluding the Auth API) you have successfully implemented. ]
