@@ -40,7 +40,7 @@ export class DsAssignment1Stack extends cdk.Stack {
     const getCustomerFunction = new lambda.Function(this, 'GetCustomerFunction', {
       runtime: lambda.Runtime.NODEJS_18_X,
       code: lambda.Code.fromAsset('lambda'),
-      handler: 'get-customer.handler',
+      handler: 'customer-handler.getCustomer',
       environment: {
         CUSTOMER_TABLE: customerTable.tableName,
       },
