@@ -21,9 +21,8 @@ For this they require the main database being `Stock`, which contains the variou
 The store also requires a way to store customer information. They can do this with the `Customer` database for which the schema is:
 
 #### `Customer` DB Schema:
-- Primary Key: `CustomerID` (int)
+- Composite Primary Key: (`CustomerID`, `Name`)
 - Attributes:
-    - `Name` (str)
     - `Allergies` (list_str)
     - `FavouriteIcecreams` (list_int)
 
