@@ -17,7 +17,7 @@ export class DsAssignment1Stack extends cdk.Stack {
 
     // Create Lambda function
     const getStockFunction = new lambda.Function(this, 'GetStockFunction', {
-      runtime: lambda.Runtime.NODEJS_14_X, // Adjust runtime as needed
+      runtime: lambda.Runtime.NODEJS_18_X, // Adjust runtime as needed
       code: lambda.Code.fromAsset('lambda'), // Path to your Lambda function code
       handler: 'get-stock.handler',
       environment: {
@@ -38,7 +38,7 @@ export class DsAssignment1Stack extends cdk.Stack {
 
     // Lambda for Customer operations
     const getCustomerFunction = new lambda.Function(this, 'GetCustomerFunction', {
-      runtime: lambda.Runtime.NODEJS_14_X,
+      runtime: lambda.Runtime.NODEJS_18_X,
       code: lambda.Code.fromAsset('lambda'),
       handler: 'get-customer.handler',
       environment: {
