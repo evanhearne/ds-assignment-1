@@ -17,7 +17,7 @@ export class DsAssignment1Stack extends cdk.Stack {
       removalPolicy: RemovalPolicy.DESTROY, // Ensures deletion when `cdk destroy` is run
     });
 
-    // Create Lambda function
+    // Create Lambda function (GET)
     const getStockFunction = new lambda.Function(this, 'GetStockFunction', {
       runtime: lambda.Runtime.NODEJS_18_X, // Adjust runtime as needed
       code: lambda.Code.fromAsset('lambda'), // Path to your Lambda function code
@@ -27,8 +27,41 @@ export class DsAssignment1Stack extends cdk.Stack {
       },
     });
 
+    // Create Lambda function (POST)
+    const addStockFunction = new lambda.Function(this, 'AddStockFunction', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      code: lambda.Code.fromAsset('lambda'),
+      handler: 'stock-handler.addStock',
+      environment: {
+        STOCK_TABLE: stockTable.tableName
+      }
+    })
+
+    // Create Lambda function (PUT)
+    const updateStockFunction = new lambda.Function(this, 'UpdateStockFunction', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      code: lambda.Code.fromAsset('lambda'),
+      handler: 'stock-handler.updateStock',
+      environment: {
+        STOCK_TABLE: stockTable.tableName
+      }
+    })
+
+    // Create Lambda function (DELETE)
+    const deleteStockFunction = new lambda.Function(this, 'DeleteStockFunction', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      code: lambda.Code.fromAsset('lambda'),
+      handler: 'stock-handler.deleteStock',
+      environment: {
+        STOCK_TABLE: stockTable.tableName
+      }
+    })
+
     // Grant Lambda permission to read from the DynamoDB table
     stockTable.grantReadData(getStockFunction);
+    stockTable.grantReadWriteData(addStockFunction)
+    stockTable.grantReadWriteData(updateStockFunction)
+    stockTable.grantReadWriteData(deleteStockFunction)
 
     // Customer Table
     const customerTable = new dynamodb.Table(this, 'CustomerTable', {
@@ -40,6 +73,7 @@ export class DsAssignment1Stack extends cdk.Stack {
     });
 
     // Lambda for Customer operations
+    // GET
     const getCustomerFunction = new lambda.Function(this, 'GetCustomerFunction', {
       runtime: lambda.Runtime.NODEJS_18_X,
       code: lambda.Code.fromAsset('lambda'),
@@ -49,7 +83,40 @@ export class DsAssignment1Stack extends cdk.Stack {
       },
     });
 
+    // POST
+    const addCustomerFunction = new lambda.Function(this, 'AddCustomerFunction', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      code: lambda.Code.fromAsset('lambda'),
+      handler: 'customer-handler.addCustomer',
+      environment: {
+        CUSTOMER_TABLE: customerTable.tableName
+      }
+    })
+
+    // PUT
+    const updateCustomerFunction = new lambda.Function(this, 'UpdateCustomerFunction', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      code: lambda.Code.fromAsset('lambda'),
+      handler: 'customer-handler.updateCustomer',
+      environment: {
+        CUSTOMER_TABLE: customerTable.tableName
+      }
+    })
+
+    // DELETE
+    const deleteCustomerFunction = new lambda.Function(this, 'DeleteCustomerFunction', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      code: lambda.Code.fromAsset('lambda'),
+      handler: 'customer-handler.deleteCustomer',
+      environment: {
+        CUSTOMER_TABLE: customerTable.tableName
+      }
+    })
+
     // Grant permissions
     customerTable.grantReadData(getCustomerFunction);
+    customerTable.grantReadWriteData(addCustomerFunction)
+    customerTable.grantReadWriteData(updateCustomerFunction)
+    customerTable.grantReadWriteData(deleteCustomerFunction)
   }
 }
