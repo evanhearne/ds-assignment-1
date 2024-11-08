@@ -7,7 +7,7 @@ import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as customResources from 'aws-cdk-lib/custom-resources';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
-export class DsAssignment1Stack extends cdk.Stack {
+export class APIStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
