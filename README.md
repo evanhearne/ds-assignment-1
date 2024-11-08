@@ -37,6 +37,24 @@ e.g.
 + GET /thing/{partition-key}/ - Get all the 'things' with a specified partition key.
 + GEtT/thing/{partition-key}?attributeX=value - Get all the 'things' with a specified partition key value and attributeX satisfying the condition .....
 
+#### Stock API
++ POST /stock - adds stock (ice cream) to the `Stock` DB . 
++ GET /stock - returns all stock from the `Stock` DB . 
++ GET /stock/{IceCreamID} - returns the stock item (ice cream) that contains the `IceCreamID` from the `Stock` DB .
++ PUT /stock/{IceCreamID} - updates the stock item (ice cream) that contains the `IceCreamID` if it exists in the `Stock` DB . 
++ DELETE /stock/{IceCreamID} - deletes the stock item (ice cream) that contains the `IceCreamID` if it exists in the `Stock` DB . 
+
+There is no endpoint in the Stock API for deleting all entries in the `Stock` DB currently - may be something to consider adding for completeness of the REST API . 
+
+#### Customer API
++ POST /customer - adds a customer to the `Customer` DB . 
++ GET /customer - returns all customers from the `Customer` DB . 
++ GET /customer/{CustomerID}/{Name} - returns the customer that contains the `CustomerID` and `Name` from the `Customer` DB . 
++ PUT /customer/{CustomerID}/{Name} - updates the customer that contains the `CustomerID` and `Name` if it exists in the `Customer` DB . 
++ DELETE /customer/{CustomerID}/{Name} - deletes the customer that contains the `CustomerID` and `Name` if it exists in the `Customer` DB. 
+
+Similarly, the Customer API does not contain an endpoint that deletes all entries within the `Customer` DB - may be something to consider for completeness of REST API . 
+
 ### Update constraint (if relevant).
 
 [Briefly explain your design for the solution to the PUT/Update constraint 
