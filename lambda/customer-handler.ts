@@ -1,5 +1,5 @@
 import { DynamoDBClient, ReturnValue } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 // Create a DynamoDB client
@@ -37,6 +37,25 @@ export const getCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatew
         return {
             statusCode: 500,
             body: JSON.stringify({ error: "Could not retrieve customer", message: error.message }),
+        };
+    }
+};
+
+export const getAllCustomers = async (): Promise<APIGatewayProxyResult> => {
+    const params = {
+        TableName: CUSTOMER_TABLE,
+    };
+
+    try {
+        const data = await dynamoDB.send(new ScanCommand(params));
+        return {
+            statusCode: 200,
+            body: JSON.stringify(data.Items),
+        };
+    } catch (error: any) {
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: "Could not retrieve customers", message: error.message }),
         };
     }
 };

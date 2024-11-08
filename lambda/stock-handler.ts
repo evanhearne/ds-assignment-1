@@ -1,5 +1,5 @@
 import { DynamoDBClient, ReturnValue } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
 // Create a DynamoDB client
 const dynamoDBClient = new DynamoDBClient({ region: process.env.AWS_REGION }); // Ensure the region is correctly set
@@ -47,6 +47,26 @@ export const getStock = async (event: APIGatewayEvent): Promise<Response> => {
         };
     }
 };
+
+export const getAllStock = async (): Promise<Response> => {
+    const params = {
+        TableName: process.env.STOCK_TABLE!,
+    };
+
+    try {
+        const data = await dynamoDB.send(new ScanCommand(params));
+        return {
+            statusCode: 200,
+            body: JSON.stringify(data.Items),
+        };
+    } catch (error: any) {
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: "Could not retrieve items", message: error.message }),
+        };
+    }
+};
+
 
 export const addStock = async (event: APIGatewayEvent): Promise<Response> => {
     if (!event.body) {

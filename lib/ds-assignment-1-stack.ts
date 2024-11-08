@@ -28,6 +28,16 @@ export class DsAssignment1Stack extends cdk.Stack {
       },
     });
 
+    // Create Lambda function (GET)
+    const getAllStockFunction = new lambda.Function(this, 'GetAllStockFunction', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      code: lambda.Code.fromAsset('lambda'),
+      handler: 'stock-handler.getAllStock',
+      environment: {
+        STOCK_TABLE: stockTable.tableName
+      }
+    })
+
     // Create Lambda function (POST)
     const addStockFunction = new lambda.Function(this, 'AddStockFunction', {
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -60,6 +70,7 @@ export class DsAssignment1Stack extends cdk.Stack {
 
     // Grant Lambda permission to read from the DynamoDB table
     stockTable.grantReadData(getStockFunction);
+    stockTable.grantReadData(getAllStockFunction)
     stockTable.grantReadWriteData(addStockFunction)
     stockTable.grantReadWriteData(updateStockFunction)
     stockTable.grantReadWriteData(deleteStockFunction)
@@ -83,6 +94,16 @@ export class DsAssignment1Stack extends cdk.Stack {
         CUSTOMER_TABLE: customerTable.tableName,
       },
     });
+
+    // GET
+    const getAllCustomersFunction = new lambda.Function(this, 'GetAllCustomersFunction', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      code: lambda.Code.fromAsset('lambda'),
+      handler: 'customer-handler.getAllCustomers',
+      environment:{
+        CUSTOMER_TABLE: customerTable.tableName
+      }
+    })
 
     // POST
     const addCustomerFunction = new lambda.Function(this, 'AddCustomerFunction', {
@@ -116,6 +137,7 @@ export class DsAssignment1Stack extends cdk.Stack {
 
     // Grant permissions
     customerTable.grantReadData(getCustomerFunction);
+    customerTable.grantReadData(getAllCustomersFunction)
     customerTable.grantReadWriteData(addCustomerFunction)
     customerTable.grantReadWriteData(updateCustomerFunction)
     customerTable.grantReadWriteData(deleteCustomerFunction)
@@ -137,6 +159,10 @@ export class DsAssignment1Stack extends cdk.Stack {
     // GET /stock/{IceCreamID}
     const getStockIntegration = new apigateway.LambdaIntegration(getStockFunction);
     icecreamID.addMethod('GET', getStockIntegration);
+
+    // GET /stock
+    const getAllStockIntegration = new apigateway.LambdaIntegration(getAllStockFunction)
+    stockResource.addMethod('GET', getAllStockIntegration)
 
     // POST /stock
     const addStockIntegration = new apigateway.LambdaIntegration(addStockFunction);
@@ -161,6 +187,10 @@ export class DsAssignment1Stack extends cdk.Stack {
     // GET /customer/{CustomerID}/{Name}
     const getCustomerIntegration = new apigateway.LambdaIntegration(getCustomerFunction);
     customerIdName.addMethod('GET', getCustomerIntegration);
+
+    // GET /customer
+    const getAllCustomersIntegration = new apigateway.LambdaIntegration(getAllCustomersFunction)
+    customerResource.addMethod('GET', getAllCustomersIntegration)
 
     // POST /customer
     const addCustomerIntegration = new apigateway.LambdaIntegration(addCustomerFunction);
