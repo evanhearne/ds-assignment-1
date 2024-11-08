@@ -4,6 +4,7 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { RemovalPolicy } from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as customResources from 'aws-cdk-lib/custom-resources';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class DsAssignment1Stack extends cdk.Stack {
@@ -204,6 +205,30 @@ export class DsAssignment1Stack extends cdk.Stack {
     const deleteCustomerIntegration = new apigateway.LambdaIntegration(deleteCustomerFunction);
     customerIdName.addMethod('DELETE', deleteCustomerIntegration);
 
+    // Seeding the database tables
+    // Lambda function to seed data
+    const seedFunction = new lambda.Function(this, 'SeedFunction', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      code: lambda.Code.fromAsset('lambda'), // Ensure you have a 'lambda' directory with the seed function
+      handler: 'seed.handler',
+      environment: {
+        CUSTOMER_TABLE_NAME: customerTable.tableName,
+        STOCK_TABLE_NAME: stockTable.tableName,
+      },
+    });
 
+    // Grant Lambda permission to write to DynamoDB tables
+    customerTable.grantReadWriteData(seedFunction);
+    stockTable.grantReadWriteData(seedFunction);
+
+    // Create a provider for the custom resource
+    const provider = new customResources.Provider(this, 'SeedDataProvider', {
+      onEventHandler: seedFunction,
+    });
+
+    // Custom resource to trigger the seed function on stack creation/update
+    new cdk.CustomResource(this, 'SeedDataResource', {
+      serviceToken: provider.serviceToken,
+    });
   }
 }
