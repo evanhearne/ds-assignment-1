@@ -30,13 +30,6 @@ The store may require more databases to store data, however, for this assignment
 
 ### App API endpoints.
 
-[ Provide a bullet-point list of the app's endpoints (excluding the Auth API) you have successfully implemented. ]
-e.g.
- 
-+ POST /thing - add a new 'thing'.
-+ GET /thing/{partition-key}/ - Get all the 'things' with a specified partition key.
-+ GEtT/thing/{partition-key}?attributeX=value - Get all the 'things' with a specified partition key value and attributeX satisfying the condition .....
-
 #### Stock API
 + POST /stock - adds stock (ice cream) to the `Stock` DB . 
 + GET /stock - returns all stock from the `Stock` DB . 
