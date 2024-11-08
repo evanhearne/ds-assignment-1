@@ -3,6 +3,7 @@ import { Construct } from 'constructs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { RemovalPolicy } from 'aws-cdk-lib';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class DsAssignment1Stack extends cdk.Stack {
@@ -118,5 +119,61 @@ export class DsAssignment1Stack extends cdk.Stack {
     customerTable.grantReadWriteData(addCustomerFunction)
     customerTable.grantReadWriteData(updateCustomerFunction)
     customerTable.grantReadWriteData(deleteCustomerFunction)
+
+    // Create an API Gateway REST API
+    const api = new apigateway.RestApi(this, 'StockAndCustomerApi', {
+      restApiName: 'Stock and Customer API',
+      description: 'API Gateway to manage stock and customer data using Lambda functions.',
+    });
+
+    // Stock API Resources and Methods
+
+    // /stock resource
+    const stockResource = api.root.addResource('stock');
+
+    // icecreamID resource
+    const icecreamID = stockResource.addResource('{IceCreamID}');
+
+    // GET /stock/{IceCreamID}
+    const getStockIntegration = new apigateway.LambdaIntegration(getStockFunction);
+    icecreamID.addMethod('GET', getStockIntegration);
+
+    // POST /stock
+    const addStockIntegration = new apigateway.LambdaIntegration(addStockFunction);
+    stockResource.addMethod('POST', addStockIntegration);
+
+    // PUT /stock/{IceCreamID}
+    const updateStockIntegration = new apigateway.LambdaIntegration(updateStockFunction);
+    icecreamID.addMethod('PUT', updateStockIntegration);
+
+    // DELETE /stock/{IceCreamID}
+    const deleteStockIntegration = new apigateway.LambdaIntegration(deleteStockFunction);
+    icecreamID.addMethod('DELETE', deleteStockIntegration);
+
+    // Customer API Resources and Methods
+
+    // /customer resource
+    const customerResource = api.root.addResource('customer');
+
+    // customerID + Name resource
+    const customerIdName = customerResource.addResource('{CustomerID}').addResource('{Name}')
+
+    // GET /customer/{CustomerID}/{Name}
+    const getCustomerIntegration = new apigateway.LambdaIntegration(getCustomerFunction);
+    customerIdName.addMethod('GET', getCustomerIntegration);
+
+    // POST /customer
+    const addCustomerIntegration = new apigateway.LambdaIntegration(addCustomerFunction);
+    customerResource.addMethod('POST', addCustomerIntegration);
+
+    // PUT /customer/{CustomerID}/{Name}
+    const updateCustomerIntegration = new apigateway.LambdaIntegration(updateCustomerFunction);
+    customerIdName.addMethod('PUT', updateCustomerIntegration);
+
+    // DELETE /customer/{CustomerID}/{Name}
+    const deleteCustomerIntegration = new apigateway.LambdaIntegration(deleteCustomerFunction);
+    customerIdName.addMethod('DELETE', deleteCustomerIntegration);
+
+
   }
 }
