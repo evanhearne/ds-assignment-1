@@ -5,11 +5,14 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { RemovalPolicy } from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as customResources from 'aws-cdk-lib/custom-resources';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { AuthStack } from './auth-stack';
 
 export class APIStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    // Auth Stack
+    const authStack = new AuthStack(this, 'AuthStack');
 
     // Stock Table
     const stockTable = new dynamodb.Table(this, 'StockTable', {
@@ -149,6 +152,11 @@ export class APIStack extends cdk.Stack {
       description: 'API Gateway to manage stock and customer data using Lambda functions.',
     });
 
+    // Cognito Authorizer
+    const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
+      cognitoUserPools: [authStack.userPool],
+    });
+
     // Stock API Resources and Methods
 
     // /stock resource
@@ -167,7 +175,10 @@ export class APIStack extends cdk.Stack {
 
     // POST /stock
     const addStockIntegration = new apigateway.LambdaIntegration(addStockFunction);
-    stockResource.addMethod('POST', addStockIntegration);
+    stockResource.addMethod('POST', addStockIntegration, {
+      authorizer: authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
 
     // PUT /stock/{IceCreamID}
     const updateStockIntegration = new apigateway.LambdaIntegration(updateStockFunction);
