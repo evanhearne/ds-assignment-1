@@ -182,11 +182,17 @@ export class APIStack extends cdk.Stack {
 
     // PUT /stock/{IceCreamID}
     const updateStockIntegration = new apigateway.LambdaIntegration(updateStockFunction);
-    icecreamID.addMethod('PUT', updateStockIntegration);
+    icecreamID.addMethod('PUT', updateStockIntegration, {
+      authorizer: authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO
+    });
 
     // DELETE /stock/{IceCreamID}
     const deleteStockIntegration = new apigateway.LambdaIntegration(deleteStockFunction);
-    icecreamID.addMethod('DELETE', deleteStockIntegration);
+    icecreamID.addMethod('DELETE', deleteStockIntegration, {
+      authorizer: authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO
+    });
 
     // Customer API Resources and Methods
 
@@ -206,15 +212,24 @@ export class APIStack extends cdk.Stack {
 
     // POST /customer
     const addCustomerIntegration = new apigateway.LambdaIntegration(addCustomerFunction);
-    customerResource.addMethod('POST', addCustomerIntegration);
+    customerResource.addMethod('POST', addCustomerIntegration, {
+      authorizer: authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO
+    });
 
     // PUT /customer/{CustomerID}/{Name}
     const updateCustomerIntegration = new apigateway.LambdaIntegration(updateCustomerFunction);
-    customerIdName.addMethod('PUT', updateCustomerIntegration);
+    customerIdName.addMethod('PUT', updateCustomerIntegration, {
+      authorizer: authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO
+    });
 
     // DELETE /customer/{CustomerID}/{Name}
     const deleteCustomerIntegration = new apigateway.LambdaIntegration(deleteCustomerFunction);
-    customerIdName.addMethod('DELETE', deleteCustomerIntegration);
+    customerIdName.addMethod('DELETE', deleteCustomerIntegration, {
+      authorizer: authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO
+    });
 
     // Seeding the database tables
     // Lambda function to seed data
