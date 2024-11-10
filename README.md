@@ -50,8 +50,9 @@ Similarly, the Customer API does not contain an endpoint that deletes all entrie
 
 ### Update constraint (if relevant).
 
-[Briefly explain your design for the solution to the PUT/Update constraint 
-- only the user who added an item to the main table could update it.]
++ Constraints are in place for both the `Customer` and `Stock` API to perform `userId` checks to ensure only the user who added the entry can modify/delete the entry using either PUT or DELETE requests. 
+
++ When users make GET requests for both the `Customer` and `Stock` API, the response body is filtered such that it won't contain the `userId` field for security.
 
 ### Translation persistence (if relevant).
 
