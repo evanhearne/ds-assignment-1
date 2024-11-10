@@ -56,11 +56,17 @@ Similarly, the Customer API does not contain an endpoint that deletes all entrie
 
 ### Translation persistence (if relevant).
 
-[Briefly explain your design for the solution to avoid repeat requests to Amazon Translate - persist translations so that Amazon Translate can be bypassed for repeat translation requests.]
++ Translation feature was not implemented due to time constraints. 
 
 ###  Extra (If relevant).
 
-[ State whether you have created a multi-stack solution for this assignment or used lambda layers to speed up update deployments. Also, mention any aspect of the CDK framework __that was not covered in the lectures that you used in this assignment. ]
++ Multi-stack solution used for this assignment - `Auth` and `App` Stacks. 
+
++ The solution was implemented from scratch i.e. no code from previous lab work was used. 
+
++ UPDATE HTTP method was used with slight difference in DynamoDB packages used from AWS SDK such as `ReturnValue` or `UpdateCommand` . 
+
++ Overall, the solution created aligns well with the lab work completed so far. 
 
 #### Deployment Instructions
 ```bash
