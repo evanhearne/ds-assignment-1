@@ -200,7 +200,7 @@ export const updateCustomer = async (event: APIGatewayProxyEvent): Promise<APIGa
         TableName: CUSTOMER_TABLE,
         Key: {
             CustomerID: parseInt(CustomerID, 10),
-            Name: Name,
+            Name: decodeURIComponent(Name),
         },
         UpdateExpression: "SET Allergies = :allergies, FavouriteIcecreams = :favourites",
         ExpressionAttributeValues: {
