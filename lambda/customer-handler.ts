@@ -24,15 +24,22 @@ export const getCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatew
         TableName: CUSTOMER_TABLE,
         Key: {
             CustomerID: parseInt(CustomerID, 10), // Ensure CustomerID is treated as a number
-            Name: Name,
+            Name: decodeURIComponent(Name),
         },
     };
 
     try {
         const data = await dynamoDB.send(new GetCommand(params));
+
+        var dataItem = data.Item
+        
+        if (dataItem && dataItem.UserId) {
+            // Remove the userID field
+            delete dataItem.UserId;
+          }
         return {
             statusCode: 200,
-            body: JSON.stringify(data.Item),
+            body: JSON.stringify(dataItem),
         };
     } catch (error: any) {
         return {
@@ -49,9 +56,19 @@ export const getAllCustomers = async (): Promise<APIGatewayProxyResult> => {
 
     try {
         const data = await dynamoDB.send(new ScanCommand(params));
+        // remove all UserId in request before return...
+
+        var dataItems = data.Items
+        if (dataItems){
+            for (let item of dataItems) {
+                if (item.UserId) {
+                    delete item.UserId
+                }
+            }
+        }
         return {
             statusCode: 200,
-            body: JSON.stringify(data.Items),
+            body: JSON.stringify(dataItems),
         };
     } catch (error: any) {
         return {
