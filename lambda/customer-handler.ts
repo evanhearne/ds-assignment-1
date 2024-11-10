@@ -63,7 +63,10 @@ export const getAllCustomers = async (): Promise<APIGatewayProxyResult> => {
 
 // Handler to add a new customer
 export const addCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const accessToken = event.headers.Authorization || ''; // Get token from headers
+    var accessToken = event.headers.Authorization || ''; // Get token from headers
+
+    // Remove "Bearer " from the string
+    accessToken = accessToken
 
     if (!accessToken) {
         return {
