@@ -182,17 +182,10 @@ export const updateCustomer = async (event: APIGatewayProxyEvent): Promise<APIGa
 
      if (userId != UserId) {
         return {
-            statusCode: 400,
-            body: JSON.stringify({ error: "UserID " + userId + " does not match " + UserId + " . Update cannot be completed . " }),
+            statusCode: 403,
+            body: JSON.stringify({ error: "UserID " + userId + " does not have the permission to update this entry." }),
         };
      }
-
-    if (!CustomerID || !Name) {
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: "CustomerID and Name are required" }),
-        };
-    }
 
     if (!event.body) {
         return {
@@ -274,28 +267,13 @@ export const deleteCustomer = async (event: APIGatewayProxyEvent): Promise<APIGa
 
      if (userId != UserId) {
         return {
-            statusCode: 400,
-            body: JSON.stringify({ error: "UserID " + userId + " does not match " + UserId + " . Update cannot be completed . " }),
+            statusCode: 403,
+            body: JSON.stringify({ error: "UserID " + userId + " does not have the permission to delete this entry. " }),
         };
      }
 
-    if (!CustomerID || !Name) {
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: "CustomerID and Name are required" }),
-        };
-    }
-
-    const params = {
-        TableName: CUSTOMER_TABLE,
-        Key: {
-            CustomerID: parseInt(CustomerID, 10),
-            Name: Name,
-        },
-    };
-
     try {
-        await dynamoDB.send(new DeleteCommand(params));
+        await dynamoDB.send(new DeleteCommand(queryParams));
         return {
             statusCode: 200,
             body: JSON.stringify({ message: "Customer deleted successfully" }),
