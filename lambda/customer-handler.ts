@@ -58,17 +58,17 @@ export const getAllCustomers = async (): Promise<APIGatewayProxyResult> => {
         const data = await dynamoDB.send(new ScanCommand(params));
         // remove all UserId in request before return...
 
-        var dataItems = data.Items
-        if (dataItems){
-            for (let item of dataItems) {
+        if (data.Items) {
+            // Remove UserId from all items if present
+            data.Items.forEach(item => {
                 if (item.UserId) {
-                    delete item.UserId
+                    delete item.UserId;
                 }
-            }
+            });
         }
         return {
             statusCode: 200,
-            body: JSON.stringify(dataItems),
+            body: JSON.stringify(data.Items),
         };
     } catch (error: any) {
         return {
