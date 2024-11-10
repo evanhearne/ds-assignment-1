@@ -74,7 +74,7 @@ npm install
 cd lambda
 npm install
 cd ..
-tsc # compile code to js for lambda
+tsc
 cdk deploy --all
 ```
 
