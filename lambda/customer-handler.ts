@@ -226,6 +226,49 @@ export const deleteCustomer = async (event: APIGatewayProxyEvent): Promise<APIGa
         };
     }
 
+    const queryParams = {
+        TableName: CUSTOMER_TABLE,
+        Key: {
+            CustomerID: parseInt(CustomerID, 10), // Ensure CustomerID is treated as a number
+            Name: decodeURIComponent(Name),
+        },
+    };
+
+    const data = await dynamoDB.send(new GetCommand(queryParams));
+
+    var UserId = "";
+
+    if (data.Item) {
+        UserId = data.Item.UserId
+    }
+
+    var accessToken = event.headers.Authorization || ''; // Get token from headers
+
+    // Remove "Bearer " from the string
+    var replaceAccessToken = accessToken.replace(/^Bearer\s+/i, '');
+
+    accessToken = replaceAccessToken
+
+     // Decode the token (you might need to verify it using a public key if required)
+     const decodedToken = decode(accessToken) as { [key: string]: any };
+
+     // Extract user information from the decoded token
+     const userId = decodedToken.sub; // Unique user identifier
+
+     if (userId != UserId) {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: "UserID " + userId + " does not match " + UserId + " . Update cannot be completed . " }),
+        };
+     }
+
+    if (!CustomerID || !Name) {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: "CustomerID and Name are required" }),
+        };
+    }
+
     const params = {
         TableName: CUSTOMER_TABLE,
         Key: {
