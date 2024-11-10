@@ -65,7 +65,10 @@ Similarly, the Customer API does not contain an endpoint that deletes all entrie
 #### Deployment Instructions
 ```bash
 npm install
+cd lambda
+npm install
+cd ..
 tsc # compile code to js for lambda
-cdk deploy
+cdk deploy --all
 ```
 
