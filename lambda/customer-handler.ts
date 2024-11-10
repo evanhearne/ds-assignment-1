@@ -66,7 +66,7 @@ export const addCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatew
     var accessToken = event.headers.Authorization || ''; // Get token from headers
 
     // Remove "Bearer " from the string
-    accessToken = accessToken
+    accessToken = accessToken.replace(/^Bearer\s+/i, '');
 
     if (!accessToken) {
         return {
