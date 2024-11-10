@@ -1,6 +1,7 @@
 import { DynamoDBClient, ReturnValue } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { decode } from "jsonwebtoken";
 
 // Create a DynamoDB client
 const dynamoDBClient = new DynamoDBClient({ region: process.env.AWS_REGION }); // Make sure region is correctly set
@@ -62,6 +63,15 @@ export const getAllCustomers = async (): Promise<APIGatewayProxyResult> => {
 
 // Handler to add a new customer
 export const addCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    const accessToken = event.headers.Authorization || ''; // Get token from headers
+
+    if (!accessToken) {
+        return {
+        statusCode: 401,
+        body: JSON.stringify({ message: 'Access token is missing' }),
+        };
+    }
+    
     if (!event.body) {
         return {
             statusCode: 400,
@@ -78,6 +88,12 @@ export const addCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatew
         };
     }
 
+    // Decode the token (you might need to verify it using a public key if required)
+    const decodedToken = decode(accessToken) as { [key: string]: any };
+    
+    // Extract user information from the decoded token
+    const userId = decodedToken.sub; // Unique user identifier
+
     const params = {
         TableName: CUSTOMER_TABLE,
         Item: {
@@ -85,6 +101,7 @@ export const addCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatew
             Name: Name,
             Allergies: Allergies || [], // Default to an empty list if not provided
             FavouriteIcecreams: FavouriteIcecreams || [], // Default to an empty list if not provided
+            UserId: userId,
         },
     };
 
