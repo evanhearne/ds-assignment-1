@@ -48,7 +48,8 @@ export class APIStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda'),
       handler: 'stock-handler.addStock',
       environment: {
-        STOCK_TABLE: stockTable.tableName
+        STOCK_TABLE: stockTable.tableName,
+        BLACKLIST_TABLE: authStack.blacklistTable.tableName,
       }
     })
 
@@ -58,7 +59,8 @@ export class APIStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda'),
       handler: 'stock-handler.updateStock',
       environment: {
-        STOCK_TABLE: stockTable.tableName
+        STOCK_TABLE: stockTable.tableName,
+        BLACKLIST_TABLE: authStack.blacklistTable.tableName,
       }
     })
 
@@ -68,13 +70,17 @@ export class APIStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda'),
       handler: 'stock-handler.deleteStock',
       environment: {
-        STOCK_TABLE: stockTable.tableName
+        STOCK_TABLE: stockTable.tableName,
+        BLACKLIST_TABLE: authStack.blacklistTable.tableName,
       }
     })
 
     // Grant Lambda permission to read from the DynamoDB table
     stockTable.grantReadData(getStockFunction);
     stockTable.grantReadData(getAllStockFunction)
+    authStack.blacklistTable.grantReadData(addStockFunction)
+    authStack.blacklistTable.grantReadData(updateStockFunction)
+    authStack.blacklistTable.grantReadData(deleteStockFunction)
     stockTable.grantReadWriteData(addStockFunction)
     stockTable.grantReadWriteData(updateStockFunction)
     stockTable.grantReadWriteData(deleteStockFunction)
@@ -115,7 +121,8 @@ export class APIStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda'),
       handler: 'customer-handler.addCustomer',
       environment: {
-        CUSTOMER_TABLE: customerTable.tableName
+        CUSTOMER_TABLE: customerTable.tableName,
+        BLACKLIST_TABLE: authStack.blacklistTable.tableName,
       }
     })
 
@@ -125,7 +132,8 @@ export class APIStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda'),
       handler: 'customer-handler.updateCustomer',
       environment: {
-        CUSTOMER_TABLE: customerTable.tableName
+        CUSTOMER_TABLE: customerTable.tableName,
+        BLACKLIST_TABLE: authStack.blacklistTable.tableName,
       }
     })
 
@@ -135,13 +143,17 @@ export class APIStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda'),
       handler: 'customer-handler.deleteCustomer',
       environment: {
-        CUSTOMER_TABLE: customerTable.tableName
+        CUSTOMER_TABLE: customerTable.tableName,
+        BLACKLIST_TABLE: authStack.blacklistTable.tableName,
       }
     })
 
     // Grant permissions
     customerTable.grantReadData(getCustomerFunction);
     customerTable.grantReadData(getAllCustomersFunction)
+    authStack.blacklistTable.grantReadData(addCustomerFunction)
+    authStack.blacklistTable.grantReadData(updateCustomerFunction)
+    authStack.blacklistTable.grantReadData(deleteCustomerFunction)
     customerTable.grantReadWriteData(addCustomerFunction)
     customerTable.grantReadWriteData(updateCustomerFunction)
     customerTable.grantReadWriteData(deleteCustomerFunction)

@@ -1,10 +1,38 @@
 import { DynamoDBClient, ReturnValue } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, ScanCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { decode } from "jsonwebtoken";
 
 // Create a DynamoDB client
 const dynamoDBClient = new DynamoDBClient({ region: process.env.AWS_REGION }); // Ensure the region is correctly set
 const dynamoDB = DynamoDBDocumentClient.from(dynamoDBClient); // Use the Document client wrapper
+const BLACKLIST_TABLE = process.env.BLACKLIST_TABLE
+
+// Utility function to verify if the idToken is blacklisted
+const isTokenBlacklisted = async (idToken: string): Promise<boolean> => {
+    const params = {
+        TableName: BLACKLIST_TABLE,
+        IndexName: 'idTokenIndex', // Name of the GSI
+        KeyConditionExpression: "IdToken = :token",
+        ExpressionAttributeValues: {
+            ":token": idToken,
+        },
+    };
+    try {
+        const data = await dynamoDB.send(new QueryCommand(params));
+        if (data.Items && data.Items.length > 0) {
+            for (const item of data.Items) {
+                if (item && item.IsBlackList) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    } catch (error: any) {
+        console.error("Error checking idToken blacklist:", error.message);
+        return false; // In case of error, assume idToken is not blacklisted
+    }
+};
+
 
 interface APIGatewayEvent {
     pathParameters?: {
@@ -96,6 +124,14 @@ export const addStock = async (event: APIGatewayEvent): Promise<Response> => {
         };
     }
 
+    // is token blacklisted
+    if (await isTokenBlacklisted(accessToken)) { // if true
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: "Could not add customer", message: "Token is invalid - user signed out or token expired." }),
+        };
+    }
+
     if (!event.body) {
         return {
             statusCode: 400,
@@ -177,6 +213,14 @@ export const updateStock = async (event: APIGatewayEvent): Promise<Response> => 
 
         var accessToken = event.headers?.Authorization || ''; // Get token from headers
         accessToken = accessToken.replace(/^Bearer\s+/i, '');
+
+        // is token blacklisted
+        if (await isTokenBlacklisted(accessToken)) { // if true
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ error: "Could not add customer", message: "Token is invalid - user signed out or token expired." }),
+            };
+        }
         const decodedToken = decode(accessToken) as { [key: string]: any };
         const userId = decodedToken.sub; // Unique user identifier
 
@@ -248,6 +292,14 @@ export const deleteStock = async (event: APIGatewayEvent): Promise<Response> => 
 
         var accessToken = event.headers?.Authorization || ''; // Get token from headers
         accessToken = accessToken.replace(/^Bearer\s+/i, '');
+
+        // is token blacklisted
+        if (await isTokenBlacklisted(accessToken)) { // if true
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ error: "Could not add customer", message: "Token is invalid - user signed out or token expired." }),
+            };
+        }
         const decodedToken = decode(accessToken) as { [key: string]: any };
         const userId = decodedToken.sub; // Unique user identifier
 

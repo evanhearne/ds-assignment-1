@@ -1,5 +1,5 @@
 import { DynamoDBClient, ReturnValue } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, ScanCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { decode } from "jsonwebtoken";
 
@@ -7,6 +7,34 @@ import { decode } from "jsonwebtoken";
 const dynamoDBClient = new DynamoDBClient({ region: process.env.AWS_REGION }); // Make sure region is correctly set
 const dynamoDB = DynamoDBDocumentClient.from(dynamoDBClient); // Use the Document client wrapper for ease of use
 const CUSTOMER_TABLE = process.env.CUSTOMER_TABLE!; // Ensure this is set in your Lambda environment
+const BLACKLIST_TABLE = process.env.BLACKLIST_TABLE
+
+// Utility function to verify if the idToken is blacklisted
+const isTokenBlacklisted = async (idToken: string): Promise<boolean> => {
+    const params = {
+        TableName: BLACKLIST_TABLE,
+        IndexName: 'idTokenIndex', // Name of the GSI
+        KeyConditionExpression: "IdToken = :token",
+        ExpressionAttributeValues: {
+            ":token": idToken,
+        },
+    };
+    try {
+        const data = await dynamoDB.send(new QueryCommand(params));
+        if (data.Items && data.Items.length > 0) {
+            for (const item of data.Items) {
+                if (item && item.IsBlackList) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    } catch (error: any) {
+        console.error("Error checking idToken blacklist:", error.message);
+        return false; // In case of error, assume idToken is not blacklisted
+    }
+};
+
 
 // Handler to retrieve a customer by CustomerID and Name
 export const getCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -89,6 +117,14 @@ export const addCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatew
         return {
         statusCode: 401,
         body: JSON.stringify({ message: 'Access token is missing' }),
+        };
+    }
+
+    // is token blacklisted
+    if (await isTokenBlacklisted(accessToken)) { // if true
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: "Could not add customer", message: "Token is invalid - user signed out or token expired." }),
         };
     }
     
@@ -174,6 +210,14 @@ export const updateCustomer = async (event: APIGatewayProxyEvent): Promise<APIGa
 
     accessToken = replaceAccessToken
 
+    // is token blacklisted
+    if (await isTokenBlacklisted(replaceAccessToken)) { // if true
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: "Could not update customer", message: "Token is invalid - user signed out or token expired." }),
+        };
+    }
+
      // Decode the token (you might need to verify it using a public key if required)
      const decodedToken = decode(accessToken) as { [key: string]: any };
 
@@ -258,6 +302,14 @@ export const deleteCustomer = async (event: APIGatewayProxyEvent): Promise<APIGa
     var replaceAccessToken = accessToken.replace(/^Bearer\s+/i, '');
 
     accessToken = replaceAccessToken
+
+    // is token blacklisted
+    if (await isTokenBlacklisted(replaceAccessToken)) { // if true
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: "Could not add customer", message: "Token is invalid - user signed out or token expired." }),
+        };
+    }
 
      // Decode the token (you might need to verify it using a public key if required)
      const decodedToken = decode(accessToken) as { [key: string]: any };
