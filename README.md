@@ -66,6 +66,8 @@ Similarly, the Customer API does not contain an endpoint that deletes all entrie
 
 + UPDATE HTTP method was used with slight difference in DynamoDB packages used from AWS SDK such as `ReturnValue` or `UpdateCommand` . 
 
++ Auth API now blacklists tokens from signed out users to ensure integrity - possible through new Blacklist DB Table + checks . 
+
 + Overall, the solution created aligns well with the lab work completed so far. 
 
 #### Deployment Instructions
