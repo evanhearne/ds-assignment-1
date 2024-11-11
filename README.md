@@ -2,7 +2,7 @@
 
 __Name:__ Evan Hearne
 
-__Demo:__ #TODO record demo and paste video link here // use a capture tool that allows direct embed into markdown . 
+__Demo:__ https://youtu.be/GhGO-Xr2FZw <-- Demo Video
 
 ### Context.
 
@@ -69,6 +69,10 @@ Similarly, the Customer API does not contain an endpoint that deletes all entrie
 + Auth API now blacklists tokens from signed out users to ensure integrity - possible through new Blacklist DB Table + checks . 
 
 + Overall, the solution created aligns well with the lab work completed so far. 
+
+## References
+
+The documentation used for this assignment can be found [here](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-construct-library.html) . 
 
 #### Deployment Instructions
 ```bash
