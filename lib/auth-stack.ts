@@ -3,13 +3,31 @@ import { Construct } from 'constructs';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 
 export class AuthStack extends cdk.Stack {
   public readonly userPool: cognito.UserPool;
   public readonly userPoolClient: cognito.UserPoolClient;
+  public readonly blacklistTable: dynamodb.Table;
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    // Token Blacklist Table
+
+    this.blacklistTable = new dynamodb.Table(this, 'BlacklistTable', {
+      partitionKey: {name: 'AccessToken', type: dynamodb.AttributeType.STRING},
+      tableName: 'Blacklist',
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    })
+
+    // Add a Global Secondary Index for `idToken`
+    this.blacklistTable.addGlobalSecondaryIndex({
+      indexName: 'idTokenIndex',
+      partitionKey: { name: 'IdToken', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,  // Project all attributes into the GSI
+    });
 
     // Create a Cognito User Pool
     this.userPool = new cognito.UserPool(this, 'UserPool', {
@@ -28,7 +46,7 @@ export class AuthStack extends cdk.Stack {
     // Create a User Pool Client
     this.userPoolClient = new cognito.UserPoolClient(this, 'UserPoolClient', {
       userPool: this.userPool,
-      generateSecret: false,
+      generateSecret: true,
       authFlows: {
         userPassword: true, // Enables USER_PASSWORD_AUTH flow
       },
@@ -41,6 +59,7 @@ export class AuthStack extends cdk.Stack {
       handler: 'auth-handler.register', // Initial handler function; others will be invoked based on the API Gateway setup
       environment: {
         CLIENT_ID: this.userPoolClient.userPoolClientId,
+        CLIENT_SECRET: this.userPoolClient.userPoolClientSecret.unsafeUnwrap(), // Unsafe unwrap if secret is guaranteed to be present
       },
     });
 
@@ -50,7 +69,8 @@ export class AuthStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda'),
       handler: 'auth-handler.confirmUser',
       environment: {
-        CLIENT_ID: this.userPoolClient.userPoolClientId
+        CLIENT_ID: this.userPoolClient.userPoolClientId,
+        CLIENT_SECRET: this.userPoolClient.userPoolClientSecret.unsafeUnwrap(),
       }
     })
 
@@ -60,7 +80,9 @@ export class AuthStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda'),
       handler: 'auth-handler.signIn',
       environment: {
-        CLIENT_ID: this.userPoolClient.userPoolClientId
+        CLIENT_ID: this.userPoolClient.userPoolClientId,
+        CLIENT_SECRET: this.userPoolClient.userPoolClientSecret.unsafeUnwrap(),
+        BLACKLIST_TABLE: this.blacklistTable.tableName
       }
     })
 
@@ -70,9 +92,14 @@ export class AuthStack extends cdk.Stack {
       code: lambda.Code.fromAsset('lambda'),
       handler: 'auth-handler.signOut',
       environment: {
-        CLIENT_ID: this.userPoolClient.userPoolClientId
+        CLIENT_ID: this.userPoolClient.userPoolClientId,
+        CLIENT_SECRET: this.userPoolClient.userPoolClientSecret.unsafeUnwrap(),
+        BLACKLIST_TABLE: this.blacklistTable.tableName,
       }
     })
+
+    this.blacklistTable.grantReadWriteData(signOutHandler)
+    this.blacklistTable.grantReadWriteData(signInHandler)
 
     // Create an API Gateway
     const api = new apigateway.RestApi(this, 'UserApi', {
